@@ -116,11 +116,11 @@ def reload_abbreviations():
         hook_set = True
 
 def create_image():
-    # Generate a simple generic icon for the system tray
     width, height = 64, 64
-    image = Image.new('RGB', (width, height), color=(40, 44, 52))
+    image = Image.new('RGB', (width, height), color=(255, 255, 255))
     dc = ImageDraw.Draw(image)
-    dc.rectangle((16, 16, 48, 48), fill=(97, 175, 239))
+    # Green "T" block
+    dc.rectangle((16, 16, 48, 48), fill=(0, 175, 102))
     return image
 
 def on_settings(icon, item):
