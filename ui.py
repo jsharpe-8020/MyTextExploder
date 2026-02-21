@@ -33,7 +33,7 @@ def save_config(config):
 
 def open_settings_window(reload_callback):
     root = tk.Tk()
-    root.title("Text Exploder — Settings")
+    root.title("My Text Exploder — Settings")
     root.geometry("640x480")
     root.config(bg=THEME['bg'])
     root.resizable(True, True)
@@ -88,7 +88,7 @@ def open_settings_window(reload_callback):
     accent_bar = tk.Frame(header_frame, bg=THEME['accent'], width=3, height=22)
     accent_bar.pack(side=tk.LEFT, padx=(0, 10))
     
-    title_label = ttk.Label(header_frame, text="Text Exploder", style='Header.TLabel')
+    title_label = ttk.Label(header_frame, text="My Text Exploder", style='Header.TLabel')
     title_label.pack(side=tk.LEFT)
     
     sub_label = ttk.Label(header_frame, text="Manage your text expansion shortcuts", style='Sub.TLabel')

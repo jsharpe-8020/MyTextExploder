@@ -156,7 +156,7 @@ def setup_tray():
         pystray.MenuItem('Quit', on_quit)
     )
     image = create_image()
-    icon_instance = pystray.Icon("TextExploder", image, "Text Exploder", menu)
+    icon_instance = pystray.Icon("TextExploder", image, "My Text Exploder", menu)
     
 def main():
     # Load initial abbreviations
