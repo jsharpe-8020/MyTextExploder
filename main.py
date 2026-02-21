@@ -50,7 +50,7 @@ def make_dynamic_callback(abbrev_str, repl_str):
                  final_repl = final_repl.replace("{{YYYY-MM-DD}}", now.strftime("%Y-%m-%d"))
                  final_repl = final_repl.replace("{{HHMMSS}}", now.strftime("%H%M%S"))
             
-            keyboard.write('\b' * len(abbrev_str) + final_repl)
+            keyboard.write('\b' * len(abbrev_str) + final_repl, delay=0.005)
         finally:
             is_writing = False
     return callback
@@ -60,7 +60,7 @@ def make_static_callback(abbrev_str, repl_str):
         global is_writing
         is_writing = True
         try:
-            keyboard.write('\b' * len(abbrev_str) + repl_str)
+            keyboard.write('\b' * len(abbrev_str) + repl_str, delay=0.005)
         finally:
             is_writing = False
     return callback
