@@ -1,7 +1,9 @@
 import json
 import os
+import time
 import threading
 import keyboard
+import pyperclip
 import pystray
 from PIL import Image, ImageDraw
 import ui
@@ -33,36 +35,49 @@ def load_config():
     except json.JSONDecodeError:
         return {}
 
+def _paste_replace(abbrev_str, replacement):
+    """Erase the abbreviation with backspaces, then paste replacement via clipboard."""
+    global is_writing
+    is_writing = True
+    try:
+        # Save current clipboard
+        try:
+            old_clip = pyperclip.paste()
+        except Exception:
+            old_clip = ""
+        
+        # Erase the typed abbreviation
+        for _ in range(len(abbrev_str)):
+            keyboard.press_and_release('backspace')
+        time.sleep(0.02)
+        
+        # Paste replacement via clipboard (instant)
+        pyperclip.copy(replacement)
+        keyboard.press_and_release('ctrl+v')
+        time.sleep(0.05)
+        
+        # Restore original clipboard
+        pyperclip.copy(old_clip)
+    finally:
+        is_writing = False
+
 def make_dynamic_callback(abbrev_str, repl_str):
     def callback():
-        global is_writing
-        is_writing = True
-        try:
-            final_repl = repl_str
-            now = datetime.datetime.now()
-            
-            # Parse special strings and replace them with formatted datetime
-            if final_repl == "YYYYMMDD_HHMMSS":
-                 final_repl = now.strftime("%Y%m%d_%H%M%S")
-            else:
-                 final_repl = final_repl.replace("{{YYYYMMDD_HHMMSS}}", now.strftime("%Y%m%d_%H%M%S"))
-                 final_repl = final_repl.replace("{{YYYYMMDD}}", now.strftime("%Y%m%d"))
-                 final_repl = final_repl.replace("{{YYYY-MM-DD}}", now.strftime("%Y-%m-%d"))
-                 final_repl = final_repl.replace("{{HHMMSS}}", now.strftime("%H%M%S"))
-            
-            keyboard.write('\b' * len(abbrev_str) + final_repl, delay=0.005)
-        finally:
-            is_writing = False
+        now = datetime.datetime.now()
+        final_repl = repl_str
+        if final_repl == "YYYYMMDD_HHMMSS":
+             final_repl = now.strftime("%Y%m%d_%H%M%S")
+        else:
+             final_repl = final_repl.replace("{{YYYYMMDD_HHMMSS}}", now.strftime("%Y%m%d_%H%M%S"))
+             final_repl = final_repl.replace("{{YYYYMMDD}}", now.strftime("%Y%m%d"))
+             final_repl = final_repl.replace("{{YYYY-MM-DD}}", now.strftime("%Y-%m-%d"))
+             final_repl = final_repl.replace("{{HHMMSS}}", now.strftime("%H%M%S"))
+        _paste_replace(abbrev_str, final_repl)
     return callback
 
 def make_static_callback(abbrev_str, repl_str):
     def callback():
-        global is_writing
-        is_writing = True
-        try:
-            keyboard.write('\b' * len(abbrev_str) + repl_str, delay=0.005)
-        finally:
-            is_writing = False
+        _paste_replace(abbrev_str, repl_str)
     return callback
 
 def on_key_event(event):
