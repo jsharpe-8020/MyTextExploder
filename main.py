@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import subprocess
 import time
 import threading
 import keyboard
@@ -289,7 +290,26 @@ def main():
     
     # Register global hotkey: Ctrl+Shift+Alt to open Settings
     def _open_settings_hotkey():
-        threading.Thread(target=lambda: ui.open_settings_window(reload_abbreviations), daemon=True).start()
+        # Tkinter crashes when spawned from a keyboard background thread.
+        # Spawning ui.py as a completely separate process acts as a bulletproof workaround.
+        ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui.py")
+        subprocess.Popen([sys.executable, ui_path], creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0)
+        
+        # We also need to reload abbreviations here in main after a short delay
+        # in case the user saves new ones in the UI process.
+        def _poll_reload():
+            time.sleep(2)  # Give user time to open and edit
+            # Read modified time of config
+            if os.path.exists(CONFIG_FILE):
+                last_mtime = os.path.getmtime(CONFIG_FILE)
+                for _ in range(300): # Poll for 5 mins
+                    time.sleep(1)
+                    if not os.path.exists(CONFIG_FILE): continue
+                    current_mtime = os.path.getmtime(CONFIG_FILE)
+                    if current_mtime > last_mtime:
+                        reload_abbreviations()
+                        last_mtime = current_mtime
+        threading.Thread(target=_poll_reload, daemon=True).start()
     
     # Suppress=False is critical here; suppressing modifiers on Windows breaks the keyboard chain
     keyboard.add_hotkey(SETTINGS_HOTKEY, _open_settings_hotkey, suppress=False)
