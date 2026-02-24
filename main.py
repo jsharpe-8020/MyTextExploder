@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import time
 import threading
 import keyboard
@@ -9,6 +10,12 @@ from PIL import Image, ImageDraw
 import ui
 import datetime
 import frequency_db
+
+# Prevent pythonw.exe silent crashes by providing dummy file handles for stdout/stderr
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
 
 APPDATA_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "MyTextExploder")
 os.makedirs(APPDATA_DIR, exist_ok=True)
