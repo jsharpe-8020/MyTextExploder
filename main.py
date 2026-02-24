@@ -37,8 +37,8 @@ FLUSH_INTERVAL = 30      # seconds
 PRUNE_COUNTER = 0        # Prune DB every Nth flush cycle
 PRUNE_EVERY = 10         # Run prune_db every 10 flush cycles (~5 min)
 
-# ── Settings hotkey: Ctrl+Shift+E ──
-SETTINGS_HOTKEY = 'ctrl+shift+e'
+# ── Settings hotkey: Ctrl+Shift+Alt ──
+SETTINGS_HOTKEY = 'ctrl+shift+alt'
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -277,7 +277,7 @@ def main():
     # Load initial abbreviations
     reload_abbreviations()
     
-    # Register global hotkey: Ctrl+Shift+E to open Settings
+    # Register global hotkey: Ctrl+Shift+Alt to open Settings
     def _open_settings_hotkey():
         threading.Thread(target=lambda: ui.open_settings_window(reload_abbreviations), daemon=True).start()
     keyboard.add_hotkey(SETTINGS_HOTKEY, _open_settings_hotkey, suppress=True)
