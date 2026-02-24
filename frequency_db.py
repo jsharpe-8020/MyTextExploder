@@ -264,6 +264,35 @@ def get_phrase_stats(db_path: str | None = None) -> dict:
         conn.close()
 
 
+def get_tracked_phrases(
+    limit: int = 500,
+    db_path: str | None = None,
+) -> list[dict]:
+    """Return tracked phrases/words ordered by most recently typed."""
+    conn = _get_connection(db_path)
+    try:
+        cursor = conn.execute(
+            """
+            SELECT phrase, count, first_typed, last_typed
+            FROM typed_phrases
+            ORDER BY last_typed DESC, count DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        return [
+            {
+                "phrase": row["phrase"],
+                "count": row["count"],
+                "first_typed": row["first_typed"],
+                "last_typed": row["last_typed"],
+            }
+            for row in cursor
+        ]
+    finally:
+        conn.close()
+
+
 def dismiss_phrase(phrase: str, db_path: str | None = None) -> None:
     """Remove a phrase from tracking so it won't be suggested again."""
     normalized = phrase.strip().lower()

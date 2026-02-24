@@ -1,36 +1,55 @@
-# Text Exploder for Windows
+# My Text Exploder for Windows
 
 A background utility that listens for specific text abbreviations and replaces them globally across any application in Windows 11. Built with Python, `keyboard`, `tkinter`, and `pystray`.
 
 ## Features
 
-- Global text replacement across all applications.
-- Unobtrusive system tray icon showing the app is running.
-- Cross-application compatibility using low-level keyboard hooks.
-- A quick settings UI built in Tkinter to dynamically add, edit, or delete items on the fly.
-- Saves directly to a simple `config.json`.
+- **Global text replacement** across all applications
+- **System tray icon** showing the app is running
+- **Ctrl+Alt+T hotkey** to open Settings from anywhere
+- **Frequency tracking** — learns which words you type most often via SQLite
+- **Smart suggestions** — recommends your most-typed phrases as shortcut candidates
+- **Tracked words tab** — view everything in the frequency database
+- **Auto-start on login** — registers itself in the Windows Startup folder
+- **Database pruning** — automatic cleanup keeps the frequency DB lean (5K row cap, 30-day stale removal)
 
 ## Quick Start
 
-You should be able to run this without opening a console window by double-clicking:
-`start_textexpander.vbs`
+Double-click `start_mytextexploder.vbs` to launch silently in the background.
 
-1. The app will spawn an icon in your system tray (bottom right corner, looks like a tiny blue square).
+1. The app will spawn an icon in your system tray (bottom right corner, looks like a green square).
 2. Start typing. Try typing `;brb` or `;em1` (the defaults).
 
-## How to edit abbreviations
+## How to Edit Abbreviations
 
-1. Right-click the system tray icon and select **Settings**.
-2. A window will appear showing your current definitions.
-3. You can use this window to add new ones or adjust existing ones. As soon as you hit **Add / Update** or **Delete**, the changes are instantly live across your OS.
+**Option 1: Hotkey** — Press `Ctrl+Alt+T` from anywhere to open Settings.
 
-## How to run on startup
+**Option 2: System Tray** — Right-click the system tray icon and select **Settings**.
 
-To ensure this runs every time you start Windows:
+The Settings window has three tabs:
 
-1. Press `Win + R` to open the Run dialog.
-2. Type `shell:startup` and hit Enter. This will open your Startup folder.
-3. Right click on `start_textexpander.vbs` in the TextExpander folder and select "Copy".
-4. Go to the Startup folder, right click the empty space, and select "Paste shortcut".
+| Tab | Purpose |
+|-----|---------|
+| **Shortcuts** | Add, edit, and delete abbreviation mappings |
+| **Suggestions** | See your most-typed words and promote them to shortcuts |
+| **Tracked** | Browse all tracked words/phrases and their frequencies |
 
-**Note regarding Administrator applications**: Windows UAC prevents regular applications from intercepting keys inside applications that are running "As Administrator" (like Task Manager, or elevated command prompts). If you want the Text Expander to work *inside* administrator applications, you must run the Text Expander itself as an Administrator or bypass UAC for the script on startup.
+## How to Run on Startup
+
+The app automatically registers itself in your Windows Startup folder on first run. To manually add it:
+
+1. Press `Win + R` → type `shell:startup` → Enter
+2. Right-click `start_mytextexploder.vbs` → Copy
+3. Paste a shortcut into the Startup folder
+
+## Requirements
+
+```
+pip install keyboard pyperclip pystray pillow
+```
+
+## Important Notes
+
+- **Administrator apps**: Windows UAC prevents regular apps from intercepting keys in elevated applications (Task Manager, admin command prompts). Run Text Exploder as Administrator if you need it to work inside those apps.
+- **Config location**: Abbreviations are stored in `%APPDATA%/MyTextExploder/config.json`
+- **Frequency database**: Tracked phrases are stored in `%APPDATA%/MyTextExploder/frequency.db`
