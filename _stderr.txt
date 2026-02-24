@@ -1,0 +1,112 @@
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined
+Traceback (most recent call last):
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\venv\Lib\site-packages\keyboard\_generic.py", line 22, in invoke_handlers
+    if handler(event):
+       ~~~~~~~^^^^^^^
+  File "D:\AntiGravity\Build_In_Public\my_text_exploder\main.py", line 124, in on_key_event
+    if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+             ^^^^^^^^^^^^^^^^^^
+NameError: name 'LAST_CAPSLOCK_TIME' is not defined

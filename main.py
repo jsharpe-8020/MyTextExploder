@@ -37,6 +37,9 @@ FLUSH_INTERVAL = 30      # seconds
 PRUNE_COUNTER = 0        # Prune DB every Nth flush cycle
 PRUNE_EVERY = 10         # Run prune_db every 10 flush cycles (~5 min)
 
+# ── Double Tab hotkey ──
+LAST_TAB_TIME = 0.0
+DOUBLE_TAP_THRESHOLD = 0.4  # seconds between two Tab presses
 def load_config():
     if not os.path.exists(CONFIG_FILE):
         return {}
@@ -114,18 +117,18 @@ def _queue_word():
 
 
 def on_key_event(event):
-    global TYPED_BUFFER, WORD_BUFFER, is_writing, LAST_CAPSLOCK_TIME
+    global TYPED_BUFFER, WORD_BUFFER, is_writing, LAST_TAB_TIME
     if event.event_type != keyboard.KEY_DOWN:
         return
 
-    # ── Double Caps Lock → open Settings ──
-    if event.name == 'caps lock' or event.scan_code == 58:
+    # ── Double Tab → open Settings ──
+    if event.name == 'tab' or event.scan_code == 15:
         now = time.time()
-        if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
-            LAST_CAPSLOCK_TIME = 0.0  # Reset to avoid triple-trigger
+        if now - LAST_TAB_TIME < DOUBLE_TAP_THRESHOLD:
+            LAST_TAB_TIME = 0.0  # Reset to avoid triple-trigger
             threading.Thread(target=lambda: ui.open_settings_window(reload_abbreviations), daemon=True).start()
         else:
-            LAST_CAPSLOCK_TIME = now
+            LAST_TAB_TIME = now
         return
 
     if is_writing:
