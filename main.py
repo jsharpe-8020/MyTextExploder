@@ -120,24 +120,6 @@ def on_key_event(event):
     global TYPED_BUFFER, WORD_BUFFER, is_writing
     if event.event_type != keyboard.KEY_DOWN:
         return
-        
-    # ── Robust Ctrl+Shift+Alt check ──
-    try:
-        if keyboard.is_pressed('ctrl') and keyboard.is_pressed('shift') and keyboard.is_pressed('alt'):
-            # Only trigger once per combo press
-            if not getattr(on_key_event, "_settings_open", False):
-                on_key_event._settings_open = True
-                
-                def _launch():
-                    ui.open_settings_window(reload_abbreviations)
-                    # Reset flag after a delay to allow re-opening later
-                    time.sleep(1)
-                    on_key_event._settings_open = False
-                    
-                threading.Thread(target=_launch, daemon=True).start()
-            return
-    except Exception:
-        pass
 
     if is_writing:
         return
@@ -297,6 +279,13 @@ def main():
     
     # Load initial abbreviations
     reload_abbreviations()
+    
+    # Register global hotkey: Ctrl+Shift+Alt to open Settings
+    def _open_settings_hotkey():
+        threading.Thread(target=lambda: ui.open_settings_window(reload_abbreviations), daemon=True).start()
+    
+    # Suppress=False is critical here; suppressing modifiers on Windows breaks the keyboard chain
+    keyboard.add_hotkey(SETTINGS_HOTKEY, _open_settings_hotkey, suppress=False)
     
     # Start background flush thread for frequency tracking
     
