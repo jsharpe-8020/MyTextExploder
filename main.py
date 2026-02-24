@@ -45,8 +45,8 @@ FLUSH_INTERVAL = 30      # seconds
 PRUNE_COUNTER = 0        # Prune DB every Nth flush cycle
 PRUNE_EVERY = 10         # Run prune_db every 10 flush cycles (~5 min)
 
-# ── Settings hotkey: Ctrl+Shift+Alt ──
-SETTINGS_HOTKEY = 'ctrl+shift+alt'
+# ── Settings hotkey: Ctrl+Alt+T ──
+SETTINGS_HOTKEY = 'ctrl+alt+t'
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
