@@ -8,6 +8,7 @@ import pystray
 from PIL import Image, ImageDraw
 import ui
 import datetime
+import frequency_db
 
 APPDATA_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "MyTextExploder")
 os.makedirs(APPDATA_DIR, exist_ok=True)
@@ -25,6 +26,16 @@ MAX_BUFFER = 100
 current_handlers = {}
 hook_set = False
 is_writing = False
+
+# ── Frequency tracking state ──
+WORD_BUFFER = ""
+PENDING_PHRASES = []     # Single words queued for recording
+RECENT_WORDS = []        # Rolling window of recent words for n-gram generation
+MAX_RECENT_WORDS = 3     # Keep last N words for bigram/trigram generation
+PHRASE_LOCK = threading.Lock()
+FLUSH_INTERVAL = 30      # seconds
+PRUNE_COUNTER = 0        # Prune DB every Nth flush cycle
+PRUNE_EVERY = 10         # Run prune_db every 10 flush cycles (~5 min)
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -80,9 +91,44 @@ def make_static_callback(abbrev_str, repl_str):
         _paste_replace(abbrev_str, repl_str)
     return callback
 
+def _queue_word():
+    """Extract the current word from WORD_BUFFER, queue it, and generate n-grams."""
+    global WORD_BUFFER
+    word = WORD_BUFFER.strip()
+    WORD_BUFFER = ""
+    if not word:
+        return
+    with PHRASE_LOCK:
+        # Always queue the single word (frequency_db filters by length/stop words)
+        if len(word) >= 4:
+            PENDING_PHRASES.append(word)
+        # Build n-grams from recent words
+        RECENT_WORDS.append(word.lower())
+        if len(RECENT_WORDS) > MAX_RECENT_WORDS:
+            RECENT_WORDS.pop(0)
+        # Generate bigrams and trigrams
+        if len(RECENT_WORDS) >= 2:
+            PENDING_PHRASES.append(" ".join(RECENT_WORDS[-2:]))
+        if len(RECENT_WORDS) >= 3:
+            PENDING_PHRASES.append(" ".join(RECENT_WORDS[-3:]))
+
+
 def on_key_event(event):
-    global TYPED_BUFFER, is_writing
-    if is_writing or event.event_type != keyboard.KEY_DOWN:
+    global TYPED_BUFFER, WORD_BUFFER, is_writing, LAST_CAPSLOCK_TIME
+    if event.event_type != keyboard.KEY_DOWN:
+        return
+
+    # ── Double Caps Lock → open Settings ──
+    if event.name == 'caps lock' or event.scan_code == 58:
+        now = time.time()
+        if now - LAST_CAPSLOCK_TIME < DOUBLE_TAP_THRESHOLD:
+            LAST_CAPSLOCK_TIME = 0.0  # Reset to avoid triple-trigger
+            threading.Thread(target=lambda: ui.open_settings_window(reload_abbreviations), daemon=True).start()
+        else:
+            LAST_CAPSLOCK_TIME = now
+        return
+
+    if is_writing:
         return
         
     name = event.name
@@ -91,12 +137,20 @@ def on_key_event(event):
         
     if name == 'space':
         TYPED_BUFFER += ' '
+        _queue_word()
     elif name == 'enter':
         TYPED_BUFFER += '\n'
+        _queue_word()
     elif name == 'backspace':
         TYPED_BUFFER = TYPED_BUFFER[:-1]
+        WORD_BUFFER = WORD_BUFFER[:-1]
     elif len(name) == 1:
         TYPED_BUFFER += name
+        # Track word characters; punctuation triggers word boundary
+        if name.isalnum():
+            WORD_BUFFER += name
+        else:
+            _queue_word()
     else:
         # Ignore modifier keys and other special keys
         return
@@ -145,7 +199,33 @@ def on_settings(icon, item):
     
     threading.Thread(target=open_ui, daemon=True).start()
 
+def flush_pending_phrases():
+    """Write any queued phrases to the database."""
+    with PHRASE_LOCK:
+        batch = PENDING_PHRASES.copy()
+        PENDING_PHRASES.clear()
+    if batch:
+        frequency_db.record_phrases_batch(batch)
+
+
+def _flush_loop():
+    """Background loop that periodically flushes queued phrases to SQLite and prunes."""
+    global PRUNE_COUNTER
+    while True:
+        time.sleep(FLUSH_INTERVAL)
+        flush_pending_phrases()
+        # Periodically prune to keep DB bounded
+        PRUNE_COUNTER += 1
+        if PRUNE_COUNTER >= PRUNE_EVERY:
+            PRUNE_COUNTER = 0
+            try:
+                frequency_db.prune_db()
+            except Exception:
+                pass  # Don't crash the flush loop
+
+
 def on_quit(icon, item):
+    flush_pending_phrases()  # Final flush before exit
     keyboard.unhook_all()
     icon.stop()
 
@@ -158,9 +238,58 @@ def setup_tray():
     image = create_image()
     icon_instance = pystray.Icon("TextExploder", image, "My Text Exploder", menu)
     
+def register_startup():
+    """Create a shortcut in the Windows Startup folder so TextExploder runs on login."""
+    try:
+        import subprocess
+        # Get the startup folder path
+        startup_dir = os.path.join(
+            os.environ.get("APPDATA", ""),
+            "Microsoft", "Windows", "Start Menu", "Programs", "Startup"
+        )
+        if not os.path.isdir(startup_dir):
+            return  # Not a standard Windows layout
+        
+        shortcut_path = os.path.join(startup_dir, "MyTextExploder.lnk")
+        if os.path.exists(shortcut_path):
+            return  # Already registered
+        
+        # Target: the VBS launcher in the project directory
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+        vbs_path = os.path.join(project_dir, "start_mytextexploder.vbs")
+        if not os.path.exists(vbs_path):
+            return  # VBS launcher not found
+        
+        # Create shortcut using PowerShell (works without extra dependencies)
+        ps_script = (
+            f'$ws = New-Object -ComObject WScript.Shell; '
+            f'$s = $ws.CreateShortcut("{shortcut_path}"); '
+            f'$s.TargetPath = "{vbs_path}"; '
+            f'$s.WorkingDirectory = "{project_dir}"; '
+            f'$s.Description = "My Text Exploder"; '
+            f'$s.Save()'
+        )
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command", ps_script],
+            capture_output=True, timeout=10
+        )
+    except Exception:
+        pass  # Non-critical — don't crash the app
+
+
 def main():
+    # Initialize frequency database
+    frequency_db.init_db()
+    
+    # Register for auto-startup (idempotent)
+    register_startup()
+    
     # Load initial abbreviations
     reload_abbreviations()
+    
+    # Start background flush thread for frequency tracking
+    flush_thread = threading.Thread(target=_flush_loop, daemon=True)
+    flush_thread.start()
     
     # Setup and run system tray
     setup_tray()

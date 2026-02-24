@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 import json
 import os
 from main import CONFIG_FILE
+import frequency_db
 
 # BuildOps-inspired theme: white dominant, green (#00AF66) highlight
 THEME = {
@@ -34,7 +35,7 @@ def save_config(config):
 def open_settings_window(reload_callback):
     root = tk.Tk()
     root.title("My Text Exploder — Settings")
-    root.geometry("640x480")
+    root.geometry("700x560")
     root.config(bg=THEME['bg'])
     root.resizable(True, True)
     
@@ -81,6 +82,15 @@ def open_settings_window(reload_callback):
               background=[('selected', THEME['accent'])],
               foreground=[('selected', 'white')])
 
+    # Tab styling
+    style.configure('TNotebook', background=THEME['bg'], borderwidth=0)
+    style.configure('TNotebook.Tab',
+                     background=THEME['input_bg'], foreground=THEME['fg'],
+                     font=(THEME['font'], 10), padding=(16, 6))
+    style.map('TNotebook.Tab',
+              background=[('selected', THEME['bg'])],
+              foreground=[('selected', THEME['accent'])])
+
     # ── Title section ──
     header_frame = ttk.Frame(root, style='TFrame')
     header_frame.pack(fill=tk.X, padx=20, pady=(16, 0))
@@ -97,9 +107,21 @@ def open_settings_window(reload_callback):
     # Divider
     tk.Frame(root, bg=THEME['border'], height=1).pack(fill=tk.X, padx=20, pady=(12, 0))
 
+    # ── Notebook (tabs) ──
+    notebook = ttk.Notebook(root)
+    notebook.pack(fill=tk.BOTH, expand=True, padx=20, pady=(8, 0))
+
+    config = load_config()
+
+    # ════════════════════════════════════════════════════════
+    #  TAB 1: SHORTCUTS (existing functionality)
+    # ════════════════════════════════════════════════════════
+    shortcuts_tab = ttk.Frame(notebook, style='TFrame')
+    notebook.add(shortcuts_tab, text="  Shortcuts  ")
+
     # ── Treeview ──
-    list_frame = ttk.Frame(root, style='TFrame')
-    list_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(12, 0))
+    list_frame = ttk.Frame(shortcuts_tab, style='TFrame')
+    list_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=(8, 0))
 
     columns = ('abbrev', 'replacement')
     tree = ttk.Treeview(list_frame, columns=columns, show='headings', selectmode='browse')
@@ -108,13 +130,10 @@ def open_settings_window(reload_callback):
     tree.column('abbrev', width=150, minwidth=100)
     tree.column('replacement', width=400, minwidth=200)
     
-    # Scrollbar
     scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL, command=tree.yview)
     tree.configure(yscrollcommand=scrollbar.set)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     tree.pack(fill=tk.BOTH, expand=True)
-
-    config = load_config()
 
     def populate_tree():
         for item in tree.get_children():
@@ -124,12 +143,11 @@ def open_settings_window(reload_callback):
 
     populate_tree()
 
-    # Divider
-    tk.Frame(root, bg=THEME['border'], height=1).pack(fill=tk.X, padx=20, pady=(12, 0))
-
     # ── Input section ──
-    control_frame = ttk.Frame(root, style='TFrame')
-    control_frame.pack(fill=tk.X, padx=20, pady=(12, 0))
+    tk.Frame(shortcuts_tab, bg=THEME['border'], height=1).pack(fill=tk.X, pady=(8, 0))
+    
+    control_frame = ttk.Frame(shortcuts_tab, style='TFrame')
+    control_frame.pack(fill=tk.X, pady=(8, 0))
 
     ttk.Label(control_frame, text="Abbreviation").grid(row=0, column=0, padx=(0, 8), pady=4, sticky=tk.W)
     abbrev_var = tk.StringVar()
@@ -191,8 +209,8 @@ def open_settings_window(reload_callback):
             messagebox.showwarning("Not Found", "Abbreviation not found.")
 
     # ── Buttons ──
-    btn_frame = ttk.Frame(root, style='TFrame')
-    btn_frame.pack(fill=tk.X, padx=20, pady=(12, 16))
+    btn_frame = ttk.Frame(shortcuts_tab, style='TFrame')
+    btn_frame.pack(fill=tk.X, pady=(8, 8))
     
     add_btn = tk.Button(
         btn_frame, text="Add / Update", command=add_update,
@@ -211,9 +229,143 @@ def open_settings_window(reload_callback):
     )
     del_btn.pack(side=tk.LEFT)
     
-    # Item count on right
     count_label = ttk.Label(btn_frame, text=f"{len(config)} shortcut{'s' if len(config) != 1 else ''}", style='Sub.TLabel')
     count_label.pack(side=tk.RIGHT)
+
+    # ════════════════════════════════════════════════════════
+    #  TAB 2: SUGGESTIONS (frequency-based recommendations)
+    # ════════════════════════════════════════════════════════
+    suggestions_tab = ttk.Frame(notebook, style='TFrame')
+    notebook.add(suggestions_tab, text="  Suggestions  ")
+
+    # ── Header info ──
+    sug_header = ttk.Frame(suggestions_tab, style='TFrame')
+    sug_header.pack(fill=tk.X, pady=(8, 0))
+    
+    ttk.Label(
+        sug_header,
+        text="Words you type most often — promote them to shortcuts to save time.",
+        style='Sub.TLabel'
+    ).pack(side=tk.LEFT)
+    
+    stats_label = ttk.Label(sug_header, text="", style='Sub.TLabel')
+    stats_label.pack(side=tk.RIGHT)
+
+    # ── Suggestions Treeview ──
+    sug_list_frame = ttk.Frame(suggestions_tab, style='TFrame')
+    sug_list_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=(8, 0))
+
+    sug_columns = ('phrase', 'count', 'last_typed')
+    sug_tree = ttk.Treeview(sug_list_frame, columns=sug_columns, show='headings', selectmode='browse')
+    sug_tree.heading('phrase', text='Phrase', anchor='w')
+    sug_tree.heading('count', text='Times Typed', anchor='center')
+    sug_tree.heading('last_typed', text='Last Typed', anchor='w')
+    sug_tree.column('phrase', width=250, minwidth=150)
+    sug_tree.column('count', width=100, minwidth=60, anchor='center')
+    sug_tree.column('last_typed', width=200, minwidth=120)
+    
+    sug_scrollbar = ttk.Scrollbar(sug_list_frame, orient=tk.VERTICAL, command=sug_tree.yview)
+    sug_tree.configure(yscrollcommand=sug_scrollbar.set)
+    sug_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    sug_tree.pack(fill=tk.BOTH, expand=True)
+
+    def refresh_suggestions():
+        """Reload suggestions from the frequency database."""
+        for item_id in sug_tree.get_children():
+            sug_tree.delete(item_id)
+        
+        # Exclude phrases that are already config values (case-insensitive)
+        existing_replacements = {v.lower() for v in config.values()}
+        existing_abbrevs = {k.lower() for k in config.keys()}
+        exclude = existing_replacements | existing_abbrevs
+        
+        try:
+            suggestions = frequency_db.get_top_phrases(min_count=9, limit=20, exclude=exclude)
+        except Exception:
+            suggestions = []
+        
+        for sug in suggestions:
+            # Format the last_typed timestamp nicely
+            last = sug.get("last_typed", "")
+            if "T" in last:
+                last = last.split("T")[0]  # Just the date part
+            sug_tree.insert('', tk.END, values=(sug["phrase"], sug["count"], last))
+        
+        # Update stats
+        try:
+            stats = frequency_db.get_phrase_stats()
+            stats_label.config(
+                text=f"{stats['total_phrases']} words tracked  ·  {stats['total_counts']} total keystrokes"
+            )
+        except Exception:
+            stats_label.config(text="")
+
+    def promote_suggestion():
+        """Pre-fill the Shortcuts tab form with the selected suggestion."""
+        selected = sug_tree.selection()
+        if not selected:
+            messagebox.showinfo("No Selection", "Select a phrase to promote.")
+            return
+        item = sug_tree.item(selected[0])
+        phrase = item['values'][0]
+        
+        # Switch to shortcuts tab and pre-fill the replacement
+        notebook.select(shortcuts_tab)
+        replacement_var.set(phrase)
+        abbrev_var.set("")
+        abbrev_entry.focus_set()
+
+    def dismiss_suggestion():
+        """Remove the selected phrase from frequency tracking."""
+        selected = sug_tree.selection()
+        if not selected:
+            messagebox.showinfo("No Selection", "Select a phrase to dismiss.")
+            return
+        item = sug_tree.item(selected[0])
+        phrase = item['values'][0]
+        
+        frequency_db.dismiss_phrase(phrase)
+        refresh_suggestions()
+
+    # ── Suggestion buttons ──
+    tk.Frame(suggestions_tab, bg=THEME['border'], height=1).pack(fill=tk.X, pady=(8, 0))
+    
+    sug_btn_frame = ttk.Frame(suggestions_tab, style='TFrame')
+    sug_btn_frame.pack(fill=tk.X, pady=(8, 8))
+    
+    promote_btn = tk.Button(
+        sug_btn_frame, text="⬆ Promote to Shortcut", command=promote_suggestion,
+        bg=THEME['accent'], fg='white', activebackground=THEME['accent_hover'],
+        activeforeground='white', font=(THEME['font'], 10, 'bold'),
+        relief=tk.FLAT, padx=16, pady=6, cursor='hand2'
+    )
+    promote_btn.pack(side=tk.LEFT, padx=(0, 8))
+    
+    dismiss_btn = tk.Button(
+        sug_btn_frame, text="✕ Dismiss", command=dismiss_suggestion,
+        bg=THEME['bg'], fg='#dc2626', activebackground='#fef2f2',
+        activeforeground='#dc2626', font=(THEME['font'], 10),
+        relief=tk.SOLID, bd=1, padx=16, pady=6, cursor='hand2',
+        highlightbackground='#fca5a5'
+    )
+    dismiss_btn.pack(side=tk.LEFT, padx=(0, 8))
+    
+    refresh_btn = tk.Button(
+        sug_btn_frame, text="↻ Refresh", command=refresh_suggestions,
+        bg=THEME['input_bg'], fg=THEME['fg'], activebackground=THEME['border'],
+        activeforeground=THEME['fg'], font=(THEME['font'], 10),
+        relief=tk.SOLID, bd=1, padx=16, pady=6, cursor='hand2',
+        highlightbackground=THEME['input_border']
+    )
+    refresh_btn.pack(side=tk.LEFT)
+
+    # Load suggestions on tab switch
+    def on_tab_change(event):
+        selected_tab = notebook.index(notebook.select())
+        if selected_tab == 1:  # Suggestions tab
+            refresh_suggestions()
+    
+    notebook.bind('<<NotebookTabChanged>>', on_tab_change)
 
     root.protocol("WM_DELETE_WINDOW", root.destroy)
     root.mainloop()
